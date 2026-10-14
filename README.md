@@ -10,6 +10,7 @@
 | `app/` | Flutter 안드로이드 앱 (Riverpod, go_router, supabase_flutter, google_sign_in) |
 | `supabase/migrations/` | 데이터베이스 표, 보안 규칙(RLS), 크레딧·공개 함수 |
 | `supabase/seed.sql` | 태그 초기값 (동물상, 테토·에겐, 무드, 캐릭터상, 취미 등) |
+| `supabase/functions/` | 서버 함수 (Deno). `process-photo`: 위치 정보 제거, 1080px, 무드 이미지 |
 | `supabase/tests/` | 로컬 Postgres로 돌리는 가입·매칭·공개·크레딧 흐름 테스트 |
 
 ## 지금 들어 있는 것
@@ -21,23 +22,26 @@
 - 서로 좋아요 → 대화방 자동 생성.
 - 얼굴 공개 요청 → 크레딧 보류 → 수락하면 차감, 거절·"조금 더"·48시간 무응답이면 반환. 조건(각자 메시지 10번, 승인된 얼굴 사진, 처리 중인 신고 없음), 대화방당 2번, 24시간 재요청 제한 포함.
 - 크레딧 장부는 쌓기만 하고, 클라이언트는 직접 쓸 수 없습니다.
+- 사진 올리기(최대 3장, 얼굴/취미 구분), 대표 사진 바꾸기, 지우기. 서버가 방향을 바로잡고 EXIF를 지운 1080px 사진과 가로 20px 무드 이미지를 만듭니다.
+- 디자인: 종이 같은 바탕, 먼지 낀 장밋빛과 저녁 하늘 파랑. 제목은 고운바탕, 본문은 Noto Sans KR (google_fonts로 처음 실행 때 받아 옴). 다크 모드 지원.
 
 ## 처음 설정하기
 
 1. **Supabase 프로젝트** 를 서울 지역(ap-northeast-2)에 만듭니다.
-2. SQL Editor에서 `supabase/migrations/20261014000000_foundation.sql`, 그다음 `supabase/seed.sql` 을 실행합니다.
+2. SQL Editor에서 `supabase/migrations/` 의 파일을 이름 순서대로, 그다음 `supabase/seed.sql` 을 실행합니다.
    (Supabase CLI를 쓰면 `supabase link` 뒤 `supabase db push`)
-3. 48시간 만료 처리를 켭니다. Database → Extensions에서 `pg_cron` 을 켜고:
+3. 서버 함수를 배포합니다: `supabase functions deploy process-photo`
+4. 48시간 만료 처리를 켭니다. Database → Extensions에서 `pg_cron` 을 켜고:
    ```sql
    select cron.schedule('expire-reveals', '*/10 * * * *', 'select public.expire_reveal_requests()');
    ```
-4. 나를 관리자로 넣고 친구를 초대합니다. 내 계정으로 한 번 로그인한 뒤:
+5. 나를 관리자로 넣고 친구를 초대합니다. 내 계정으로 한 번 로그인한 뒤:
    ```sql
    insert into public.invites (email) values ('내계정@gmail.com');   -- 로그인 전에 먼저
    insert into public.admins (user_id) select id from auth.users where email = '내계정@gmail.com';
    insert into public.invites (email) values ('friend1@gmail.com'), ('friend2@gmail.com');
    ```
-5. **구글 로그인**: Google Cloud Console에서 OAuth 클라이언트를 두 개 만듭니다.
+6. **구글 로그인**: Google Cloud Console에서 OAuth 클라이언트를 두 개 만듭니다.
    - 웹 클라이언트: 이 ID를 Supabase → Authentication → Providers → Google 에 넣고, 앱의 `GOOGLE_WEB_CLIENT_ID` 로도 씁니다.
    - 안드로이드 클라이언트: 패키지 이름 `com.sangsang.sangsang` 과 디버그·릴리스 키의 SHA-1을 등록합니다.
 
@@ -56,14 +60,14 @@ flutter run \
 ```bash
 cd app && flutter analyze && flutter test
 PGURL=postgres://postgres:postgres@localhost:5432/postgres supabase/tests/run.sh   # 빈 Postgres 16
+cd supabase/functions && deno test -A _shared/
 ```
 
 ## 다음 단계
 
-1. 사진 올리기, 위치 정보 제거, 무드 이미지 만들기 (서버 함수)
-2. Gemini 태그 분석과 속 에너지 퀴즈, 결과 카드
-3. 프로필 입력 화면
-4. 오늘의 카드 (밤 10시), 좋아요, 매칭
-5. 채팅, 첫 질문 카드, 연락처·돈 이야기 안내
-6. 얼굴 공개 화면 (캡처 차단, 60초 주소, 30초 보기)
-7. 사진과 달라요, 신고, 차단, 관리자 화면
+1. Gemini 태그 분석과 속 에너지 퀴즈, 결과 카드
+2. 프로필 입력 화면
+3. 오늘의 카드 (밤 10시), 좋아요, 매칭
+4. 채팅, 첫 질문 카드, 연락처·돈 이야기 안내
+5. 얼굴 공개 화면 (캡처 차단, 60초 주소, 30초 보기)
+6. 사진과 달라요, 신고, 차단, 관리자 화면

@@ -1,0 +1,3 @@
+# 서버 함수 설정. 배포: supabase functions deploy process-photo
+[functions.process-photo]
+verify_jwt = true

@@ -115,5 +115,29 @@ do $$ begin
   assert public.credit_balance('00000000-0000-0000-0000-00000000000a') = 100, 'expire releases hold';
 end $$;
 
+-- 사진: 대표 바꾸기, 남의 사진은 못 지움, 대표를 지우면 다음 사진이 대표
+insert into public.photos (id, owner, original_path, is_primary, created_at) values
+  ('10000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000000a', 'a/2.jpg', false, now() + interval '1 second');
+update public.photos set is_primary = true where id = '10000000-0000-0000-0000-00000000000a';
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+do $$ begin
+  perform public.delete_my_photo('10000000-0000-0000-0000-00000000000a');
+  raise exception 'FAIL: deleted someone else''s photo';
+exception when others then
+  if sqlerrm <> 'not_owner' then raise; end if;
+end $$;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+select public.set_primary_photo('10000000-0000-0000-0000-0000000000a2');
+do $$ begin
+  assert (select is_primary from public.photos where id = '10000000-0000-0000-0000-0000000000a2'), 'primary switched';
+  assert (select count(*) from public.photos where owner = auth.uid() and is_primary) = 1, 'one primary';
+end $$;
+select * from public.delete_my_photo('10000000-0000-0000-0000-0000000000a2');
+do $$ begin
+  assert (select is_primary from public.photos where id = '10000000-0000-0000-0000-00000000000a'), 'primary moved to remaining photo';
+end $$;
+reset role;
+
 rollback;
 \echo ALL_TESTS_PASSED
