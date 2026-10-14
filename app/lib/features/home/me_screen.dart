@@ -71,6 +71,12 @@ class MeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('프로필 고치기'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/me/profile'),
+            ),
+            ListTile(
               leading: const Icon(Icons.photo_library_outlined),
               title: const Text('내 사진'),
               trailing: const Icon(Icons.chevron_right),

@@ -9,3 +9,4 @@ psql "$PGURL" -q -v ON_ERROR_STOP=1 \
   -f seed.sql \
   -c "grant select, insert, update, delete on all tables in schema public to authenticated; grant usage on all sequences in schema public to authenticated;"
 psql "$PGURL" -q -v ON_ERROR_STOP=1 -f tests/reveal_flow.sql
+psql "$PGURL" -q -v ON_ERROR_STOP=1 -f tests/cards_chat.sql
