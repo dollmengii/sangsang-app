@@ -63,3 +63,16 @@ insert into public.tags (id, category, name_male, name_female, description, sugg
   ('cold',      'energy', '냉미남', '냉미녀', '차가워 보이는 인상', 'all', 10, true, false),
   ('warm',      'energy', '온미남', '온미녀', '다정해 보이는 인상', 'all', 11, true, false)
 on conflict (id) do nothing;
+
+-- 첫 질문 카드 (기획서 7장). 관리자가 더 넣고 고친다.
+insert into public.icebreakers (tag_a, tag_b, body) values
+  (null, null, '요즘 가장 자주 듣는 노래 한 곡만 알려 주세요.'),
+  (null, null, '주말에 제일 행복했던 순간은 언제였어요?'),
+  (null, null, '최근에 혼자 웃었던 일 하나만 말해 줄래요?'),
+  ('teto', 'egen', '테토와 에겐이 만났네요. 첫인상이랑 제일 달랐던 친구 얘기 해 볼까요?'),
+  ('tegen', null, '테겐이시네요. 오늘은 테토 쪽이었어요, 에겐 쪽이었어요?'),
+  ('dog', 'cat', '강아지상과 고양이상이에요. 둘이 산책을 간다면 어디로 갈까요?'),
+  ('h_cafe', null, '요즘 제일 좋았던 카페 하나만 추천해 주세요.'),
+  ('h_travel', null, '다음 여행지를 지금 바로 정해야 한다면 어디예요?'),
+  ('h_movie', null, '최근에 끝까지 본 드라마나 영화가 있어요?'),
+  ('p_slow', 'p_slow', '둘 다 천천히 알아가는 편이네요. 오늘 하루는 어땠어요?');
