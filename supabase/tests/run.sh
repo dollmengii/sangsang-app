@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 psql "$PGURL" -q -v ON_ERROR_STOP=1 \
   -f tests/supabase_shim.sql \
-  -f migrations/20261014000000_foundation.sql \
+  $(printf -- '-f %s ' migrations/*.sql) \
   -f seed.sql \
   -c "grant select, insert, update, delete on all tables in schema public to authenticated; grant usage on all sequences in schema public to authenticated;"
 psql "$PGURL" -q -v ON_ERROR_STOP=1 -f tests/reveal_flow.sql

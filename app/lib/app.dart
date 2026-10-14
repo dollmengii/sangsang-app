@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/supabase.dart';
+import 'core/theme.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/home/me_screen.dart';
 import 'features/onboarding/consent_screen.dart';
 import 'features/onboarding/profile_state.dart';
+import 'features/photos/my_photos_screen.dart';
 
 /// 로그인과 가입 단계가 바뀌면 라우터가 redirect를 다시 계산하게 한다.
 class _RouterRefresh extends ChangeNotifier {
@@ -51,7 +53,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               path: '/cards',
               builder: (_, _) => const PlaceholderScreen(
                 title: '오늘의 카드',
-                message: '매일 밤 10시에 카드 8장이 도착해요.\n(다음 단계에서 만들어요)',
+                message: '오늘 밤 10시,\n첫 카드 여덟 장이 도착해요.',
               ),
             ),
           ]),
@@ -60,12 +62,16 @@ final routerProvider = Provider<GoRouter>((ref) {
               path: '/chats',
               builder: (_, _) => const PlaceholderScreen(
                 title: '대화',
-                message: '서로 좋아요를 누르면 대화방이 열려요.\n(다음 단계에서 만들어요)',
+                message: '서로 마음이 닿으면\n여기에 대화가 열려요.',
               ),
             ),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/me', builder: (_, _) => const MeScreen()),
+            GoRoute(
+              path: '/me',
+              builder: (_, _) => const MeScreen(),
+              routes: [GoRoute(path: 'photos', builder: (_, _) => const MyPhotosScreen())],
+            ),
           ]),
         ],
       ),
@@ -80,12 +86,9 @@ class SangsangApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: '상상',
-      theme: ThemeData(colorSchemeSeed: const Color(0xFFB8355F), useMaterial3: true),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFFB8355F),
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
       routerConfig: ref.watch(routerProvider),
     );
   }

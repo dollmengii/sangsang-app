@@ -36,3 +36,16 @@ jobs:
       - run: supabase/tests/run.sh
         env:
           PGURL: postgres://postgres:postgres@localhost:5432/postgres
+
+  functions:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: supabase/functions
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check process-photo/index.ts
+      - run: deno test -A _shared/
